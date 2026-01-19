@@ -2,7 +2,7 @@
 // http://localhost:4000/api/user/webhooks
 
 import { Webhook } from "svix"
-import userModel from "../models/userModel"
+import userModel from "../models/userModel.js"
 const clerkWebhooks = async(req, res) => {
     try {
 
@@ -48,6 +48,8 @@ const clerkWebhooks = async(req, res) => {
                  break;
             }
             case "user.deleted":{
+                await userModel.findOneAndDelete({clerkId:data.id})
+                res.JSON({})
                  break;
             }
                 
@@ -63,3 +65,5 @@ const clerkWebhooks = async(req, res) => {
         
     }
 }
+
+export {clerkWebhooks}
