@@ -29,7 +29,7 @@ const clerkWebhooks = async(req, res) => {
                 }
                  
                 await userModel.create(userData)
-                res.JSON({})
+                res.json({})
 
                  break;
             }
@@ -41,7 +41,7 @@ const clerkWebhooks = async(req, res) => {
                     photo:data.image_url
                 }
                 await userModel.findOneAndUpdate({clerkId:data.id}, userData)
-                res.JSON({})
+                res.json({})
 
 
 
@@ -49,7 +49,7 @@ const clerkWebhooks = async(req, res) => {
             }
             case "user.deleted":{
                 await userModel.findOneAndDelete({clerkId:data.id})
-                res.JSON({})
+                res.json({})
                  break;
             }
                 
@@ -61,7 +61,7 @@ const clerkWebhooks = async(req, res) => {
         
     } catch (error) {
         console.log(error.message);
-        res.JSON({success:false, message:error.message})
+        res.json({success:false, message:error.message})
         
     }
 }
