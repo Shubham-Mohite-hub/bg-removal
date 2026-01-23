@@ -1,7 +1,74 @@
 import React from 'react'
 import { assets, plans } from '../assets/assets'
+import { useContext } from 'react'
+import {AppContext} from '../context/AppContext.jsx'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@clerk/clerk-react'
+import { toast } from 'react-toastify'
+import axios from 'axios'
 
 const BuyCredit = () => {
+
+
+
+  const {backendUrl , loadCreditsData} = useContext(AppContext)
+  const navigate = useNavigate()
+
+  const {getToken} = useAuth()
+
+  const initPay = async(order)=>{
+            const options = {
+              key : import.meta.env.RAZORPAY_KEY_ID,
+              amount : order.amount,
+              currency : order.currency,
+              name : 'Credits Payment',
+              description :  'Credits Payment',
+              order_id : order.id,
+              reciept:order.reciept,
+              handler:async (response)=>{
+                   console.log(response);
+
+                   const token = await getToken()
+                   try {
+                     const {data} = await axios.post(backendUrl+'api/user/verify-razor',response, {headers:{token}})
+                     if(data.success){
+                      loadCreditsData()
+                      navigate('/')
+                      toast.success('Credits Added')
+                     }
+                   } catch (error) {
+                    console.log(error);
+                    toast.error(error.message)
+                    
+                   }
+                   
+              }
+            }
+
+            const rzp = new window.Razorpay(options)
+            rzp.open()
+  }
+
+  const paymentRazorpay =  async(planId)=>{
+           try {
+
+            const token =  await getToken()
+            const {data} = await axios.post(backendUrl + 'api/user/pay-razor', {planId}, {headers:{token}})
+
+            if(data.success){
+              initPay(data.order)
+
+
+            }
+            
+           } catch (error) {
+            console.log(error);
+            toast.error(error.message)
+            
+           }
+  }
+
+
   return (
     <div className="min-h-[80vh] bg-gradient-to-b from-gray-50 to-white text-center pt-16 mb-16 px-4">
       
@@ -48,7 +115,9 @@ const BuyCredit = () => {
             </p>
 
             {/* Button */}
-            <button
+            <button onClick={()=>paymentRazorpay(item.id)}
+
+            
               className="w-full mt-8 py-3 rounded-lg text-sm font-medium
                          bg-gradient-to-r from-gray-900 to-gray-700
                          text-white hover:opacity-90 transition"
